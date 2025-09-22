@@ -1,0 +1,11 @@
+/.idea/
+/.ansible/
+/.vscode/
+/env/
+*/.pytest_cache/
+/log/
+*/__pycache__/
+/__pycache__/
+*.pyc
+*.log
+.github/workflows/
