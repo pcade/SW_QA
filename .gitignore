@@ -1,11 +1,22 @@
 /.idea/
 /.ansible/
 /.vscode/
-/env/
-*/.pytest_cache/
-/log/
-*/__pycache__/
+**/.pytest_cache/
+<<<<<<< HEAD
+/.pytest_cache/
+**/__pycache__/
 /__pycache__/
+/env/
+/trash/
+/log/
+=======
+.pytest_cache/
+__pycache__/
+**/__pycache__/
+/env/
+>>>>>>> 5647ddefc43412fee6dc7f104c6a323cab79ab07
 *.pyc
+/log/
+/trash/
 *.log
 .github/workflows/
