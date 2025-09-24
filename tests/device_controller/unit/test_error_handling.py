@@ -1,11 +1,27 @@
-# tests/unit/test_error_handling.py
+#!/usr/bin/python3
+# ============================================================================
+# Название: test_error_handling.py
+# Родитель: Pytest
+# Автор:    Григорий Пахомов
+# Версия:   1
+# Дата:     24.09.2025
+# Описание: Мок тесты для device_controller.py
+# Примечание: Используется unittest.mock для эмуляции поведения serial.Serial
+# ============================================================================
+
+
+# ============================================================================
+# Импорт модулей и глобальных переменных
+# ============================================================================
 import pytest
 from unittest.mock import Mock, patch
 from src.device_controller import DeviceController
 
 
 class TestErrorHandling:
-    """Тесты обработки ошибок"""
+    """
+    Тесты обработки ошибок
+    """
 
     @patch('serial.Serial')
     def test_response_with_whitespace(self, mock_serial):

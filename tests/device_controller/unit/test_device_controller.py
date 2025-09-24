@@ -1,11 +1,27 @@
-# tests/unit/test_device_controller.py
+#!/usr/bin/python3
+# ============================================================================
+# Название: test_device_controller.py
+# Родитель: Pytest
+# Автор:    Григорий Пахомов
+# Версия:   1
+# Дата:     24.09.2025
+# Описание: Мок тесты для device_controller.py
+# Примечание: Используется unittest.mock для эмуляции поведения serial.Serial
+# ============================================================================
+
+
+# ============================================================================
+# Импорт модулей и глобальных переменных
+# ============================================================================
 import pytest
 from unittest.mock import Mock, patch
 from src.device_controller import DeviceController
 
 
 class TestDeviceController:
-    """Тесты для класса DeviceController"""
+    """
+    Тесты для класса DeviceController
+    """
 
     @patch('serial.Serial')
     def test_get_voltage(self, mock_serial):

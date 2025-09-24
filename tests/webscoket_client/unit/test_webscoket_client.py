@@ -1,10 +1,27 @@
+#!/usr/bin/python3
+# ============================================================================
+# Название: test_webscoket_client.py
+# Родитель: Pytest
+# Автор:    Григорий Пахомов
+# Версия:   1
+# Дата:     24.09.2025
+# Описание: Мок тесты для webscoket_client.py
+# Примечание: Используется unittest.mock для эмуляции поведения serial.Serial
+# ============================================================================
+
+
+# ============================================================================
+# Импорт модулей и глобальных переменных
+# ============================================================================
 import pytest
 from unittest.mock import patch, Mock
 from src.webscoket_client import WebscoketClient
 
 
 class TestWSClient:
-    """Тесты для класса WSClient"""
+    """
+    Тесты для класса WSClient
+    """
 
     @patch("websocket.create_connection")
     def test_get_voltage(self, mock_ws_create):
