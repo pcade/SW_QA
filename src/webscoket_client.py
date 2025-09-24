@@ -17,7 +17,7 @@ import re
 import websocket
 
 
-class WebscoketClient:
+class WebsocketClient:
     """Класс WebSocket-клиента для взаимодействия с сервером"""
 
     COMMANDS = {
