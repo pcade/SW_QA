@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, Mock
-from src.ws_client import WSClient
+from src.webscoket_client import WebscoketClient
 
 
 class TestWSClient:
@@ -12,7 +12,7 @@ class TestWSClient:
         mock_ws.recv.return_value = '{"cmd":"GET_V","payload":"V_12V"}'
         mock_ws_create.return_value = mock_ws
 
-        client = WSClient("ws://fake", timeout=1.0)
+        client = WebscoketClient("ws://fake", timeout=1.0)
         result = client.get_voltage()
 
         mock_ws.send.assert_called_with('{"cmd": "GET_V"}')
@@ -24,7 +24,7 @@ class TestWSClient:
         mock_ws.recv.return_value = '{"cmd":"GET_A","payload":"A_1A"}'
         mock_ws_create.return_value = mock_ws
 
-        client = WSClient("ws://fake")
+        client = WebscoketClient("ws://fake")
         result = client.get_ampere()
 
         mock_ws.send.assert_called_with('{"cmd": "GET_A"}')
@@ -36,7 +36,7 @@ class TestWSClient:
         mock_ws.recv.return_value = '{"cmd":"GET_S","payload":"S_DSA123"}'
         mock_ws_create.return_value = mock_ws
 
-        client = WSClient("ws://fake")
+        client = WebscoketClient("ws://fake")
         result = client.get_serial()
 
         mock_ws.send.assert_called_with('{"cmd": "GET_S"}')
@@ -47,7 +47,7 @@ class TestWSClient:
         mock_ws = Mock()
         mock_ws_create.return_value = mock_ws
 
-        client = WSClient("ws://fake")
+        client = WebscoketClient("ws://fake")
         client.close()
 
         with pytest.raises(RuntimeError,

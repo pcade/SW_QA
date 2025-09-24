@@ -1,25 +1,24 @@
 #!/usr/bin/python3
 # ============================================================================
-# Название: device_controller.py
+# Название: weboscoket_client.py
 # Родитель: Наследуемый
 # Автор:    Григорий Пахомов
-# Версия:   1
+# Версия:   0.1
 # Дата:     24.09.2025
-# Описание: Класс для работы с устройством по serial-интерфейсу.
+# Описание: Класс для работы с устройством как WebSocket-клиент.
 # ============================================================================
 
 
 # ============================================================================
 # Импорт модулей и глобальных переменных
 # ============================================================================
-import serial
+import json
 import re
+import websocket
 
 
-class DeviceController:
-    """
-    Класс вызова команд по serial-интерфейсу.
-    """
+class WebscoketClient:
+    """Класс WebSocket-клиента для взаимодействия с сервером"""
 
     COMMANDS = {
         'VOLTAGE': 'GET_V',
@@ -33,54 +32,54 @@ class DeviceController:
         'SERIAL': re.compile(r'^S_[A-Z0-9]+$')
     }
 
-    def __init__(self, port: str, baudrate: int = 9600, timeout: float = 1.0):
-        self.port = port
-        self.baudrate = baudrate
+    def __init__(self, url: str = "ws://localhost:8765", timeout: float = 2.0):
+        """
+        url: адрес WebSocket-сервера
+        timeout: таймаут на чтение ответа
+        """
+        self.url = url
         self.timeout = timeout
-        self.serial_connection = None
-        self.open_connection()
+        self.ws = None
+        self.open()
 
-    def open_connection(self):
+    def open(self):
         """
-        Устанавливает serial соединение.
+        Устанавливает  соединение
         """
-        try:
-            self.serial_connection = serial.Serial(
-                port=self.port,
-                baudrate=self.baudrate,
-                timeout=self.timeout
-            )
-        except serial.SerialException as e:
-            raise serial.SerialException(
-                f"Failed to open port {self.port}: {str(e)}")
+        self.ws = websocket.create_connection(self.url, timeout=self.timeout)
 
-    def send_command(self, command: str) -> str:
+    def send_command(self, cmd: str) -> dict:
         """
-        Отправляет команду устройству и возвращает ответ.
+        Отправляет команду устройству и возвращает ответ (dict).
+        """
+        if self.ws is None:
+            raise RuntimeError("WebSocket connection is not open")
+
+        request = {"cmd": cmd}
+        self.ws.send(json.dumps(request))
+        raw_response = self.ws.recv()
+        return json.loads(raw_response)
+
+    def validate_response(self, response_type: str, response: dict) -> bool:
+        """
+        Валидирует формат ответа от WebSocket сервера.
         """
         if (
-            self.serial_connection is None
-            or not self.serial_connection.is_open
+            not isinstance(response, dict)
+            or 'cmd' not in response
+            or 'payload' not in response
         ):
-            raise RuntimeError("Serial connection is not open")
+            return False
 
-        self.serial_connection.reset_input_buffer()
-        self.serial_connection.write(f"{command}\r\n".encode())
+        if response['cmd'] != self.COMMANDS[response_type]:
+            return False
 
-        response = self.serial_connection.readline()
-
-        if not response:
-            raise serial.SerialTimeoutException("Read timeout occurred")
-
-        decoded_response = response.decode('utf-8').strip()
-        return decoded_response
-
-    def validate_response(self, response_type: str, response: str) -> bool:
-        """
-        Валидирует формат ответа от устройства.
-        """
         pattern = self.RESPONSE_PATTERNS.get(response_type)
-        return pattern.match(response) is not None if pattern else False
+
+        if not pattern:
+            return False
+
+        return pattern.match(response['payload']) is not None
 
     def get_voltage(self) -> str:
         """
@@ -89,7 +88,7 @@ class DeviceController:
         response = self.send_command(self.COMMANDS['VOLTAGE'])
         if not self.validate_response('VOLTAGE', response):
             raise ValueError(f"Invalid voltage response format: {response}")
-        return response
+        return response["payload"]
 
     def get_ampere(self) -> str:
         """
@@ -98,7 +97,7 @@ class DeviceController:
         response = self.send_command(self.COMMANDS['AMPERE'])
         if not self.validate_response('AMPERE', response):
             raise ValueError(f"Invalid ampere response format: {response}")
-        return response
+        return response["payload"]
 
     def get_serial(self) -> str:
         """
@@ -107,14 +106,15 @@ class DeviceController:
         response = self.send_command(self.COMMANDS['SERIAL'])
         if not self.validate_response('SERIAL', response):
             raise ValueError(f"Invalid serial response format: {response}")
-        return response
+        return response["payload"]
 
     def close(self):
         """
         Закрывает соединение.
         """
-        if self.serial_connection and self.serial_connection.is_open:
-            self.serial_connection.close()
+        if self.ws and self.ws.connected:
+            self.ws.close()
+            self.ws = None
 
     def __enter__(self):
         """
@@ -122,7 +122,7 @@ class DeviceController:
         """
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Автоматически закрывает соединения.
         """
