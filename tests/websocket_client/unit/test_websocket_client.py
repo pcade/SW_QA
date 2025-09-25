@@ -100,12 +100,11 @@ class TestWebsocketClient:
     @patch('src.websocket_client.websocket.create_connection')
     def test_invalid_response_voltage(self, mock_create_connection):
         """
-        Тест обработки неверного формата ответа
+        Тест обработки неверного формата ответа get_voltage
         """
         mock_ws = Mock()
         mock_create_connection.return_value = mock_ws
 
-        # Эмулируем неверный формат ответа
         invalid_response = {"wrong_key": "wrong_value"}
         mock_ws.recv.return_value = json.dumps(invalid_response)
 
@@ -119,12 +118,11 @@ class TestWebsocketClient:
     @patch('src.websocket_client.websocket.create_connection')
     def test_invalid_response_ampere(self, mock_create_connection):
         """
-        Тест обработки неверного формата ответа
+        Тест обработки неверного формата ответа get_ampere
         """
         mock_ws = Mock()
         mock_create_connection.return_value = mock_ws
 
-        # Эмулируем неверный формат ответа
         invalid_response = {"wrong_key": "wrong_value"}
         mock_ws.recv.return_value = json.dumps(invalid_response)
 
@@ -138,12 +136,11 @@ class TestWebsocketClient:
     @patch('src.websocket_client.websocket.create_connection')
     def test_invalid_response_serial(self, mock_create_connection):
         """
-        Тест обработки неверного формата ответа
+        Тест обработки неверного формата ответа get_serial
         """
         mock_ws = Mock()
         mock_create_connection.return_value = mock_ws
 
-        # Эмулируем неверный формат ответа
         invalid_response = {"wrong_key": "wrong_value"}
         mock_ws.recv.return_value = json.dumps(invalid_response)
 
