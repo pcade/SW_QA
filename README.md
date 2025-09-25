@@ -190,7 +190,7 @@ pytest tests/websocket_client/integration -v
 
 #### Unit тесты (`test_device_controller.py`)
 ```bash
-pytest tests/device_controller/unit -v
+pytest tests/websocket_client/unit -v
 ```
 
 - Валидация форматов напряжения **GET_V**
