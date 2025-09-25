@@ -22,29 +22,6 @@ class TestDeviceController:
     """
     Тесты для класса DeviceController
     """
-
-    @patch('serial.Serial')
-    def test_get_voltage(self, mock_serial):
-        """
-        Тест запроса напряжения
-        """
-        # Настраиваем mock для полной эмуляции Serial
-        mock_serial_instance = Mock()
-        mock_serial.return_value = mock_serial_instance
-
-        # Эмулируем открытое соединение
-        mock_serial_instance.is_open = True
-        mock_serial_instance.readline.return_value = b"V_12V\n"
-
-        # Тестируем реальный код
-        device = DeviceController("COM1")
-        result = device.get_voltage()
-
-        # Проверяем вызовы mock
-        mock_serial_instance.write.assert_called_with(b"GET_V\r\n")
-        mock_serial_instance.reset_input_buffer.assert_called_once()
-        assert result == "V_12V"
-
     @patch('serial.Serial')
     def test_various_voltage_formats(self, mock_serial):
         """Тест различных форматов напряжения"""
@@ -76,22 +53,6 @@ class TestDeviceController:
                     device.get_voltage()
 
     @patch('serial.Serial')
-    def test_get_ampere(self, mock_serial):
-        """
-        Тест запроса тока
-        """
-        mock_serial_instance = Mock()
-        mock_serial.return_value = mock_serial_instance
-        mock_serial_instance.is_open = True
-        mock_serial_instance.readline.return_value = b"A_1A\n"
-
-        device = DeviceController("COM1")
-        result = device.get_ampere()
-
-        mock_serial_instance.write.assert_called_with(b"GET_A\r\n")
-        assert result == "A_1A"
-
-    @patch('serial.Serial')
     def test_various_ampere_formats(self, mock_serial):
         """Тест различных форматов тока"""
         test_cases = [
@@ -120,22 +81,6 @@ class TestDeviceController:
                 with pytest.raises(ValueError,
                                    match="Invalid ampere response format"):
                     device.get_ampere()
-
-    @patch('serial.Serial')
-    def test_get_serial(self, mock_serial):
-        """
-        Тест запроса серийного номера
-        """
-        mock_serial_instance = Mock()
-        mock_serial.return_value = mock_serial_instance
-        mock_serial_instance.is_open = True
-        mock_serial_instance.readline.return_value = b"S_DSA123\n"
-
-        device = DeviceController("COM1")
-        result = device.get_serial()
-
-        mock_serial_instance.write.assert_called_with(b"GET_S\r\n")
-        assert result == "S_DSA123"
 
     @patch('serial.Serial')
     def test_serial_number_edge_cases(self, mock_serial):

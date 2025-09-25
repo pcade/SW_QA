@@ -22,61 +22,92 @@ class TestWebsocketClient:
     """
     Тесты для класса WebsocketClient
     """
+    @patch('src.websocket_client.websocket.create_connection')
+    def test_various_voltage_formats(self, mock_create_connection):
+        """
+        Тест различных форматов напряжения
+        """
+        test_cases = [
+            ({"cmd": "GET_V", "payload": "V_5V"}, True),      # Valid
+            ({"cmd": "GET_V", "payload": "V_12V"}, True),     # Valid
+            ({"cmd": "GET_V", "payload": "V_0V"}, True),      # Valid
+            ({"cmd": "GET_V", "payload": "V_12.5V"}, False),  # Invalid
+            ({"cmd": "GET_V", "payload": "V_12"}, False),     # Invalid
+            ({"cmd": "GET_V", "payload": "VOLT_12V"}, False)  # Invalid
+        ]
+
+        for i, (response, should_be_valid) in enumerate(test_cases):
+            mock_ws = Mock()
+            mock_create_connection.return_value = mock_ws
+            mock_ws.recv.return_value = json.dumps(response)
+
+            client = WebsocketClient("ws://localhost:8765")
+
+            if should_be_valid:
+                result = client.get_voltage()
+                assert result == response["payload"], f"Test case {i} failed"
+            else:
+                expected_msg = f"Invalid voltage response format: {response}"
+                with pytest.raises(ValueError, match=expected_msg):
+                    client.get_voltage()
 
     @patch('src.websocket_client.websocket.create_connection')
-    def test_get_voltage(self, mock_create_connection):
+    def test_various_ampere_formats(self, mock_create_connection):
         """
-        Тест запроса напряжения
+        Тест различных форматов напряжения
         """
-        # Настраиваем mock для WebSocket соединения
-        mock_ws = Mock()
-        mock_create_connection.return_value = mock_ws
+        test_cases = [
+            ({"cmd": "GET_A", "payload": "A_5A"}, True),      # Valid
+            ({"cmd": "GET_A", "payload": "A_12A"}, True),     # Valid
+            ({"cmd": "GET_A", "payload": "A_0A"}, True),      # Valid
+            ({"cmd": "GET_A", "payload": "A_12.5A"}, False),  # Invalid
+            ({"cmd": "GET_A", "payload": "A_12"}, False),     # Invalid
+            ({"cmd": "GET_A", "payload": "AOLT_12A"}, False)  # Invalid
+        ]
 
-        # Эмулируем корректный ответ от сервера
-        expected_response = {"cmd": "GET_V", "payload": "V_220V"}
-        mock_ws.recv.return_value = json.dumps(expected_response)
+        for i, (response, should_be_valid) in enumerate(test_cases):
+            mock_ws = Mock()
+            mock_create_connection.return_value = mock_ws
+            mock_ws.recv.return_value = json.dumps(response)
 
-        # Тестируем реальный код
-        client = WebsocketClient("ws://localhost:8765")
-        result = client.get_voltage()
+            client = WebsocketClient("ws://localhost:8765")
 
-        # Проверяем вызовы mock
-        mock_ws.send.assert_called_with(json.dumps({"cmd": "GET_V"}))
-        assert result == "V_220V"
+            if should_be_valid:
+                result = client.get_ampere()
+                assert result == response["payload"], f"Test case {i} failed"
+            else:
+                expected_msg = f"Invalid ampere response format: {response}"
+                with pytest.raises(ValueError, match=expected_msg):
+                    client.get_ampere()
 
     @patch('src.websocket_client.websocket.create_connection')
-    def test_get_ampere(self, mock_create_connection):
+    def test_various_serial_formats(self, mock_create_connection):
         """
-        Тест запроса тока
+        Тест различных форматов напряжения
         """
-        mock_ws = Mock()
-        mock_create_connection.return_value = mock_ws
+        test_cases = [
+            ({"cmd": "GET_S", "payload": "S_ABC123"}, True),   # Valid
+            ({"cmd": "GET_S", "payload": "S_123"}, True),      # Valid
+            ({"cmd": "GET_S", "payload": "S_A"}, True),        # Valid
+            ({"cmd": "GET_S", "payload": "S_AB@123"}, False),  # Invalid
+            ({"cmd": "GET_S", "payload": "S_ab123"}, False),   # Invalid
+            ({"cmd": "GET_S", "payload": "S_AB 123"}, False)   # Invalid
+        ]
 
-        expected_response = {"cmd": "GET_A", "payload": "A_10A"}
-        mock_ws.recv.return_value = json.dumps(expected_response)
+        for i, (response, should_be_valid) in enumerate(test_cases):
+            mock_ws = Mock()
+            mock_create_connection.return_value = mock_ws
+            mock_ws.recv.return_value = json.dumps(response)
 
-        client = WebsocketClient("ws://localhost:8765")
-        result = client.get_ampere()
+            client = WebsocketClient("ws://localhost:8765")
 
-        mock_ws.send.assert_called_with(json.dumps({"cmd": "GET_A"}))
-        assert result == "A_10A"
-
-    @patch('src.websocket_client.websocket.create_connection')
-    def test_get_serial(self, mock_create_connection):
-        """
-        Тест запроса серийного номера
-        """
-        mock_ws = Mock()
-        mock_create_connection.return_value = mock_ws
-
-        expected_response = {"cmd": "GET_S", "payload": "S_ABC123"}
-        mock_ws.recv.return_value = json.dumps(expected_response)
-
-        client = WebsocketClient("ws://localhost:8765")
-        result = client.get_serial()
-
-        mock_ws.send.assert_called_with(json.dumps({"cmd": "GET_S"}))
-        assert result == "S_ABC123"
+            if should_be_valid:
+                result = client.get_serial()
+                assert result == response["payload"], f"Test case {i} failed"
+            else:
+                expected_msg = f"Invalid serial response format: {response}"
+                with pytest.raises(ValueError, match=expected_msg):
+                    client.get_serial()
 
     @patch('src.websocket_client.websocket.create_connection')
     def test_send_command_general(self, mock_create_connection):
@@ -96,57 +127,3 @@ class TestWebsocketClient:
         expected_error = "Invalid command: INVALID_CMD. Valid commands are:\
  ['GET_V', 'GET_A', 'GET_S']"
         assert str(exc_info.value) == expected_error
-
-    @patch('src.websocket_client.websocket.create_connection')
-    def test_invalid_response_voltage(self, mock_create_connection):
-        """
-        Тест обработки неверного формата ответа get_voltage
-        """
-        mock_ws = Mock()
-        mock_create_connection.return_value = mock_ws
-
-        invalid_response = {"wrong_key": "wrong_value"}
-        mock_ws.recv.return_value = json.dumps(invalid_response)
-
-        expected_msg = f"Invalid voltage response format: {invalid_response}"
-        client = WebsocketClient("ws://localhost:8765")
-
-        with pytest.raises(ValueError,
-                           match=expected_msg):
-            client.get_voltage()
-
-    @patch('src.websocket_client.websocket.create_connection')
-    def test_invalid_response_ampere(self, mock_create_connection):
-        """
-        Тест обработки неверного формата ответа get_ampere
-        """
-        mock_ws = Mock()
-        mock_create_connection.return_value = mock_ws
-
-        invalid_response = {"wrong_key": "wrong_value"}
-        mock_ws.recv.return_value = json.dumps(invalid_response)
-
-        expected_msg = f"Invalid ampere response format: {invalid_response}"
-        client = WebsocketClient("ws://localhost:8765")
-
-        with pytest.raises(ValueError,
-                           match=expected_msg):
-            client.get_ampere()
-
-    @patch('src.websocket_client.websocket.create_connection')
-    def test_invalid_response_serial(self, mock_create_connection):
-        """
-        Тест обработки неверного формата ответа get_serial
-        """
-        mock_ws = Mock()
-        mock_create_connection.return_value = mock_ws
-
-        invalid_response = {"wrong_key": "wrong_value"}
-        mock_ws.recv.return_value = json.dumps(invalid_response)
-
-        expected_msg = f"Invalid serial response format: {invalid_response}"
-        client = WebsocketClient("ws://localhost:8765")
-
-        with pytest.raises(ValueError,
-                           match=expected_msg):
-            client.get_serial()
