@@ -1,8 +1,8 @@
 # SW_QA
 ---
 ## Подготовка
-1. Cкачасть проект ```git clone https://github.com/pcade/SW_QA.git ```
-2. Перейсти в проект ```cd SW_QA```
+1. Cкачать проект ```git clone https://github.com/pcade/SW_QA.git ```
+2. Перейти в проект ```cd SW_QA```
 3. Создать виртуальное окружение ```python3 -m venv env```
 4. Запустить виртуальное окружение ```source env/bin/activate```
 5. Установить зависимости ```pip install -r requirements.txt```
