@@ -22,6 +22,7 @@ from src.device_controller import DeviceController
 # Объявление переменных для тестирования
 # ============================================================================
 SERIAL_PORT = "/dev/ttyUSB0"
+BAUDRATE = 9600
 TIMEOUT = 1
 RESULT_GET_V = "V_12V"
 RESULT_GET_A = "A_5A"
@@ -43,8 +44,10 @@ class TestDeviceControllerIntegration:
 
         device = DeviceController(SERIAL_PORT)
 
-        mock_serial.assert_called_once_with(SERIAL_PORT, timeout=TIMEOUT)
-        assert device.ser.is_open
+        mock_serial.assert_called_once_with(SERIAL_PORT,
+                                            baudrate=BAUDRATE,
+                                            timeout=TIMEOUT)
+        assert device.serial_connection.is_open
 
     @patch('serial.Serial')
     def test_voltage_measurement_workflow(self, mock_serial):
@@ -59,8 +62,10 @@ class TestDeviceControllerIntegration:
         device = DeviceController(SERIAL_PORT)
         result = device.get_voltage()
 
-        mock_serial.assert_called_once_with(SERIAL_PORT, timeout=TIMEOUT)
-        mock_serial_instance.write.assert_called_once_with(b"GET_V\n")
+        mock_serial.assert_called_once_with(SERIAL_PORT,
+                                            baudrate=BAUDRATE,
+                                            timeout=TIMEOUT)
+        mock_serial_instance.write.assert_called_once_with(b"GET_V\r\n")
         mock_serial_instance.readline.assert_called_once()
 
         assert result == RESULT_GET_V
@@ -78,11 +83,13 @@ class TestDeviceControllerIntegration:
         device = DeviceController(SERIAL_PORT)
         result = device.get_ampere()
 
-        mock_serial.assert_called_once_with(SERIAL_PORT, timeout=TIMEOUT)
-        mock_serial_instance.write.assert_called_once_with(b"GET_A\n")
+        mock_serial.assert_called_once_with(SERIAL_PORT,
+                                            baudrate=BAUDRATE,
+                                            timeout=TIMEOUT)
+        mock_serial_instance.write.assert_called_once_with(b"GET_A\r\n")
         mock_serial_instance.readline.assert_called_once()
 
-        assert result == "RESULT_GET_A"
+        assert result == RESULT_GET_A
 
     @patch('serial.Serial')
     def test_serial_number_retrieval_workflow(self, mock_serial):
@@ -97,11 +104,13 @@ class TestDeviceControllerIntegration:
         device = DeviceController(SERIAL_PORT)
         result = device.get_serial()
 
-        mock_serial.assert_called_once_with(SERIAL_PORT, timeout=TIMEOUT)
-        mock_serial_instance.write.assert_called_once_with(b"GET_S\n")
+        mock_serial.assert_called_once_with(SERIAL_PORT,
+                                            baudrate=BAUDRATE,
+                                            timeout=TIMEOUT)
+        mock_serial_instance.write.assert_called_once_with(b"GET_S\r\n")
         mock_serial_instance.readline.assert_called_once()
 
-        assert result == "RESULT_GET_S"
+        assert result == RESULT_GET_S
 
     @patch('serial.Serial')
     def test_multiple_operations_in_sequence(self, mock_serial):
@@ -125,9 +134,9 @@ class TestDeviceControllerIntegration:
         serial_result = device.get_serial()
 
         assert mock_serial_instance.write.call_count == 3
-        mock_serial_instance.write.assert_any_call(b"GET_V\n")
-        mock_serial_instance.write.assert_any_call(b"GET_A\n")
-        mock_serial_instance.write.assert_any_call(b"GET_S\n")
+        mock_serial_instance.write.assert_any_call(b"GET_V\r\n")
+        mock_serial_instance.write.assert_any_call(b"GET_A\r\n")
+        mock_serial_instance.write.assert_any_call(b"GET_S\r\n")
 
         assert voltage_result == RESULT_GET_V
         assert current_result == RESULT_GET_A
@@ -149,5 +158,5 @@ class TestDeviceControllerIntegration:
                            match="Invalid voltage response format"):
             device.get_voltage()
 
-        mock_serial_instance.write.assert_called_once_with(b"GET_V\n")
+        mock_serial_instance.write.assert_called_once_with(b"GET_V\r\n")
         mock_serial_instance.readline.assert_called_once()
