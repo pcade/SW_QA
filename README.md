@@ -107,5 +107,23 @@ with DeviceController(port='/dev/ttyUSB0',
 
 #### Пример использования
 ```python3
-from src.webscoket_client import WebscoketClient
+from weboscoket_client import WebsocketClient
+
+# Пример 1: Использование с контекстным менеджером
+with WebsocketClient("ws://localhost:8765") as client:
+    voltage = client.get_voltage()
+    ampere = client.get_ampere()
+    serial = client.get_serial()
+    
+    print(f"Напряжение: {voltage}")
+    print(f"Ток: {ampere}")
+    print(f"Серийный номер: {serial}")
+
+# Пример 2: Явное управление
+client = WebsocketClient("ws://192.168.1.100:8080")
+try:
+    voltage = client.get_voltage()
+    print(f"Напряжение: {voltage}")
+finally:
+    client.close()
 ```
