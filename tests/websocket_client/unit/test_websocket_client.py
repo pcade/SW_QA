@@ -127,3 +127,24 @@ class TestWebsocketClient:
         expected_error = "Invalid command: INVALID_CMD. Valid commands are:\
  ['GET_V', 'GET_A', 'GET_S']"
         assert str(exc_info.value) == expected_error
+
+    @patch('src.websocket_client.websocket.create_connection')
+    def test_send_command_closed_connection(self, mock_create_connection):
+        """
+        Тест ошибки при закрытом соединении
+        """
+        mock_ws = Mock()
+        mock_create_connection.return_value = mock_ws
+
+        client = WebsocketClient("ws://localhost:8765")
+        client.open()
+
+        client.ws = None
+
+        with pytest.raises(RuntimeError,
+                           match="WebSocket connection is not open"):
+            client.send_command(str("GET_V"))
+
+        with pytest.raises(RuntimeError,
+                           match="WebSocket connection is not open"):
+            client.send_command(str("GET_V"))

@@ -64,6 +64,12 @@ class DeviceController:
         ):
             raise RuntimeError("Serial connection is not open")
 
+        if not self.is_valid_command(command):
+            raise ValueError(
+                f"Invalid command: {command}. \
+Valid commands are: {list(self.COMMANDS.values())}"
+            )
+
         self.serial_connection.reset_input_buffer()
         self.serial_connection.write(f"{command}\r\n".encode())
 
@@ -74,6 +80,12 @@ class DeviceController:
 
         decoded_response = response.decode('utf-8').strip()
         return decoded_response
+
+    def is_valid_command(self, cmd: str) -> bool:
+        """
+        Проверяет, является ли команда допустимой
+        """
+        return cmd in self.COMMANDS.values()
 
     def validate_response(self, response_type: str, response: str) -> bool:
         """

@@ -122,10 +122,14 @@ class TestDeviceController:
         mock_serial_instance.readline.return_value = b"TEST_RESPONSE\n"
 
         device = DeviceController("COM1")
-        result = device.send_command("TEST_CMD")
+        with pytest.raises(ValueError) as exc_info:
+            device.send_command("TEST_CMD")
 
-        mock_serial_instance.write.assert_called_with(b"TEST_CMD\r\n")
-        assert result == "TEST_RESPONSE"
+        expected_error = "Invalid command: \
+TEST_CMD. Valid commands are: ['GET_V', 'GET_A', 'GET_S']"
+        assert str(exc_info.value) == expected_error
+
+        mock_serial_instance.write.assert_not_called()
 
     @patch('serial.Serial')
     def test_send_command_with_stripping(self, mock_serial):
@@ -138,9 +142,14 @@ class TestDeviceController:
         mock_serial_instance.readline.return_value = b"  RESPONSE  \r\n"
 
         device = DeviceController("COM1")
-        result = device.send_command("CMD")
+        with pytest.raises(ValueError) as exc_info:
+            device.send_command("CMD")
 
-        assert result == "RESPONSE"
+        expected_error = "Invalid command: \
+CMD. Valid commands are: ['GET_V', 'GET_A', 'GET_S']"
+        assert str(exc_info.value) == expected_error
+
+        mock_serial_instance.write.assert_not_called()
 
     @patch('serial.Serial')
     def test_send_command_closed_connection(self, mock_serial):
