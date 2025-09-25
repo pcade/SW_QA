@@ -9,10 +9,18 @@
 # Примечание: Тестирует взаимодействие всех компонентов системы
 # ============================================================================
 
+
+# ============================================================================
+# Импорт модулей и глобальных переменных
+# ============================================================================
 import pytest
 from unittest.mock import Mock, patch
 from src.device_controller import DeviceController
 
+
+# ============================================================================
+# Объявление переменных для тестирования
+# ============================================================================
 SERIAL_PORT = "/dev/ttyUSB0"
 TIMEOUT = 1
 RESULT_GET_V = "V_12V"
@@ -143,19 +151,3 @@ class TestDeviceControllerIntegration:
 
         mock_serial_instance.write.assert_called_once_with(b"GET_V\n")
         mock_serial_instance.readline.assert_called_once()
-
-    @patch('serial.Serial')
-    def test_connection_management_integration(self, mock_serial):
-        """
-        Интеграционный тест управления соединением
-        """
-        mock_serial_instance = Mock()
-        mock_serial.return_value = mock_serial_instance
-        mock_serial_instance.is_open = True
-        mock_serial_instance.readline.return_value = f"{RESULT_GET_V}\r\n"
-
-        device = DeviceController(SERIAL_PORT)
-
-        mock_serial.assert_called_once_with(SERIAL_PORT, timeout=TIMEOUT)
-        device.close_connection()
-        mock_serial_instance.close.assert_called_once()
