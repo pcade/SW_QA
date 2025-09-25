@@ -119,11 +119,9 @@ class TestWebsocketClient:
 
         client = WebsocketClient("ws://localhost:8765")
 
-        # Проверяем, что при невалидной команде вызывается исключение
         with pytest.raises(ValueError) as exc_info:
             client.send_command("INVALID_CMD")
 
-        # Проверяем текст исключения
         expected_error = "Invalid command: INVALID_CMD. Valid commands are:\
  ['GET_V', 'GET_A', 'GET_S']"
         assert str(exc_info.value) == expected_error

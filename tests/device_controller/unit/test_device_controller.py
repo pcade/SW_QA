@@ -154,11 +154,11 @@ CMD. Valid commands are: ['GET_V', 'GET_A', 'GET_S']"
     @patch('serial.Serial')
     def test_send_command_closed_connection(self, mock_serial):
         """
-        Тест ошибки при закрытом соединении
+        Тест обработки ошибки при закрытом соединении
         """
         mock_serial_instance = Mock()
         mock_serial.return_value = mock_serial_instance
-        mock_serial_instance.is_open = False  # Эмулируем закрытое соединение
+        mock_serial_instance.is_open = False
 
         device = DeviceController("COM1")
 
