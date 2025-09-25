@@ -145,7 +145,7 @@ pytest tests/device_controller/unit -v
 
 ### Пример использования
 ```python3
-from websocket_client import WebsocketClient
+from src.websocket_client import WebsocketClient
 
 # Пример 1: Использование с контекстным менеджером
 with WebsocketClient("ws://localhost:8765") as client:
