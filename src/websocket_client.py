@@ -55,10 +55,22 @@ class WebsocketClient:
         if self.ws is None:
             raise RuntimeError("WebSocket connection is not open")
 
+        if not self.is_valid_command(cmd):
+            raise ValueError(
+                f"Invalid command: {cmd}. \
+Valid commands are: {list(self.COMMANDS.values())}"
+            )
+
         request = {"cmd": cmd}
         self.ws.send(json.dumps(request))
         raw_response = self.ws.recv()
         return json.loads(raw_response)
+
+    def is_valid_command(self, cmd: str) -> bool:
+        """
+        Проверяет, является ли команда допустимой
+        """
+        return cmd in self.COMMANDS.values()
 
     def validate_response(self, response_type: str, response: dict) -> bool:
         """
